@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TP1 - Lenguaje IV</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 700px;
+            margin: 30px auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        section {
+            margin-bottom: 25px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        #vistaPrevia {
+            margin-top: 15px;
+            max-width: 100%;
+            max-height: 300px;
+            display: none;
+            border: 1px solid #ddd;
+        }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+
+    <h1>Trabajo Práctico N°1</h1>
+
+    <section>
+        <h2>1. Geolocalización</h2>
+        <div id="infoGeo">Obteniendo ubicación...</div>
+    </section>
+
+    <section>
+        <h2>2. Subir y Mostrar Imagen</h2>
+        <input type="file" id="inputImagen" accept="image/*">
+        <div id="mensajeError" class="error"></div>
+        <br>
+        <img id="vistaPrevia" alt="Vista previa">
+    </section>
+
+    <script>
+        const infoGeo = document.getElementById('infoGeo');
+
+        const configuracion = {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+        };
+
+        function obtenerUbicacion() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(mostrarPosicion, manejarError, configuracion);
+            } else {
+                infoGeo.innerHTML = "La geolocalización no es soportada por este navegador.";
+            }
+        }
+
+        function mostrarPosicion(posicion) {
+            const latitud = posicion.coords.latitude;
+            const longitud = posicion.coords.longitude;
+            infoGeo.innerHTML = `<p><strong>Latitud:</strong> ${latitud}</p>
+                                 <p><strong>Longitud:</strong> ${longitud}</p>`;
+        }
+
+        function manejarError(error) {
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    infoGeo.innerHTML = "Error: Permiso denegado.";
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    infoGeo.innerHTML = "Error: Ubicación no disponible.";
+                    break;
+                case error.TIMEOUT:
+                    infoGeo.innerHTML = "Error: Tiempo de espera agotado.";
+                    break;
+                default:
+                    infoGeo.innerHTML = "Error desconocido.";
+                    break;
+            }
+        }
+
+        obtenerUbicacion();
+
+        const inputImagen = document.getElementById('inputImagen');
+        const vistaPrevia = document.getElementById('vistaPrevia');
+        const mensajeError = document.getElementById('mensajeError');
+
+        inputImagen.addEventListener('change', function(evento) {
+            const archivo = evento.target.files[0];
+            mensajeError.textContent = "";
+
+            if (archivo) {
+                if (!archivo.type.startsWith('image/')) {
+                    mensajeError.textContent = "Error: Selecciona una imagen válida.";
+                    inputImagen.value = ""; 
+                    vistaPrevia.style.display = "none";
+                    return;
+                }
+
+                const lector = new FileReader();
+
+                lector.onload = function(e) {
+                    vistaPrevia.src = e.target.result;
+                    vistaPrevia.style.display = "block";
+                };
+
+                lector.readAsDataURL(archivo);
+            }
+        });
+    </script>
+</body>
+</html>
